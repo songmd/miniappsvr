@@ -4,6 +4,16 @@ from .weixin import WxApi
 from estore.serializers import *
 from rest_framework import generics
 from django.db import transaction
+from django.urls import reverse
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 
 class RetCode(object):
@@ -28,9 +38,6 @@ def customer_login(request):
             return HttpResponse(json.dumps(resp), content_type="application/json")
 
         shop = ShopInfo.objects.get(pk=uuid.UUID(shop_id))
-        if shop is None:
-            resp['retcode'] = RetCode.SHOP_NOT_EXIST
-            return HttpResponse(json.dumps(resp), content_type="application/json")
 
         # 有js_code 则user_token不生效
         if js_code is not None:
@@ -39,12 +46,12 @@ def customer_login(request):
                 resp['retcode'] = RetCode.WXSRV_ERROR
                 return HttpResponse(json.dumps(resp), content_type="application/json")
             try:
-                customer = AppCustomer.objects.get(openid=wx_data['openid'], belong=shop)
+                customer = AppCustomer.objects.get(openid=wx_data['openid'], shop=shop)
                 resp['user_token'] = customer.id.hex
             except AppCustomer.DoesNotExist:
-                customer = AppCustomer.objects.create(belong=shop)
+                customer = AppCustomer.objects.create(shop=shop)
                 customer.openid = wx_data['openid']
-                customer.belong = shop
+                customer.shop = shop
                 resp['user_token'] = customer.id.hex
 
             customer.session_key = wx_data['session_key']
@@ -59,7 +66,7 @@ def customer_login(request):
             return HttpResponse(json.dumps(resp), content_type="application/json")
 
         if user_token is not None:
-            customer = AppCustomer.objects.get(pk=user_token, belong=shop)
+            customer = AppCustomer.objects.get(pk=user_token, shop=shop)
             if customer is None:
                 resp['retcode'] = RetCode.USER_NOT_EXIST
                 return HttpResponse(json.dumps(resp), content_type="application/json")
@@ -80,8 +87,41 @@ def customer_login(request):
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-def ask_for_pay(request):
+def wxpay_notify(request):
     pass
+
+
+def ask_for_pay(request):
+    resp = {}
+    order_no = request.GET.get('order_no', None)
+    if order_no is None:
+        resp['retcode'] = RetCode.INVALID_PARA
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+    order = Order.objects.get(pk=uuid.UUID(order_no))
+    wxapi = WxApi(order.customer.shop.app_id,
+                  order.customer.shop.merchant.mch_id,
+                  order.customer.shop.merchant.mch_key,
+                  request.build_absolute_uri(reverse('wxpay_notify')),
+                  key=order.customer.shop.merchant.key_file.path,
+                  cert=order.customer.shop.merchant.cert_file.path
+                  )
+    wx_data = wxapi.jsapi_unified_order(body=order.summary(),
+                                        out_trade_no=order.out_trade_no.hex,
+                                        total_fee=int(order.amount() * 100),
+                                        spbill_create_ip=get_client_ip(request),
+                                        limit_pay='no_credit',
+                                        openid=order.customer.openid),
+    if wx_data is None:
+        resp['retcode'] = RetCode.WXSRV_ERROR
+    else:
+        resp['retcode'] = RetCode.SUCCESS
+        resp['prepay'] = wx_data
+        print(wx_data)
+
+    # comment = wxapi.pull_comment('20180201000000', '20180211000000')
+    # print(comment)
+    return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 class ShopInfoDetail(generics.RetrieveAPIView):
@@ -96,7 +136,7 @@ class ProductList(generics.ListAPIView):
         shop_id = self.request.query_params.get('shop_id', None)
         if shop_id is None:
             return Product.objects.all().none()
-        queryset = Product.objects.filter(belong=shop_id)
+        queryset = Product.objects.filter(shop=shop_id)
         return queryset
 
 
@@ -118,7 +158,7 @@ class OrderList(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
 
     def get_queryset(self):
-        return Order.objects.all().filter(belong=self.kwargs['user_token'])
+        return Order.objects.all().filter(customer=self.kwargs['user_token'])
 
     def create(self, request, *args, **kwargs):
         resp = {}
@@ -133,7 +173,7 @@ class OrderList(generics.ListCreateAPIView):
             item = BasketItem(product_id=request.data['product'],
                               quantity=request.data['quantity'],
                               price=request.data['price'])
-            order = Order(belong=customer)
+            order = Order(customer=customer)
             item.belong_order = order
             with transaction.atomic():
                 order.save()
@@ -145,12 +185,12 @@ class OrderList(generics.ListCreateAPIView):
                 resp['retcode'] = RetCode.INVALID_PARA
                 return HttpResponse(json.dumps(resp), content_type="application/json")
             with transaction.atomic():
-                order = Order(belong=customer)
+                order = Order(customer=customer)
                 order.save()
                 for iid in request.data['item']:
                     item = BasketItem.objects.get(pk=iid)
                     if item.belong_order is not None or item.belong_customer is None:
-                        raise()
+                        raise ()
                     item.belong_customer = None
                     item.belong_order = order
                     item.save()
@@ -163,4 +203,4 @@ class OrderDetail(generics.RetrieveAPIView):
     serializer_class = OrderSerializer
 
     def get_queryset(self):
-        return Order.objects.all().filter(belong=self.kwargs['user_token'])
+        return Order.objects.all().filter(customer=self.kwargs['user_token'])

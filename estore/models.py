@@ -22,7 +22,7 @@ class AppMerchant(models.Model):
 
 class AppCustomer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    belong = models.ForeignKey('ShopInfo', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
+    shop = models.ForeignKey('ShopInfo', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
     openid = models.CharField(_('微信OpenId'), max_length=128)
     session_key = models.CharField(_('会话密钥'), max_length=128)
     unionid = models.CharField(_('统一Id'), max_length=128, null=True)
@@ -51,15 +51,18 @@ class BasketItem(models.Model):
 
     product = models.ForeignKey('Product', on_delete=models.CASCADE, verbose_name=_("商品"))
     quantity = models.PositiveIntegerField(_('数量'), default=1)
-    price = models.DecimalField(_('成交价格'), decimal_places=2, max_digits=12)
+    price = models.FloatField(_('成交价格'))
     date_created = models.DateTimeField(_("生成时间"), auto_now_add=True)
 
 
 class Order(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    id = models.UUIDField(_('ID'), primary_key=True, default=uuid.uuid4)
 
-    belong = models.ForeignKey('AppCustomer', on_delete=models.CASCADE,
-                               verbose_name=_('所属客户'))
+    # 用于统一下单
+    out_trade_no = models.UUIDField(_('微信支付单号'), default=uuid.uuid4)
+
+    customer = models.ForeignKey('AppCustomer', on_delete=models.CASCADE,
+                                 verbose_name=_('所属客户'))
 
     STATUS_CHOICES = (
         ('unpay', _("未支付")),
@@ -71,6 +74,19 @@ class Order(models.Model):
     )
 
     status = models.CharField(_("订单状态"), max_length=32, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+
+    def amount(self):
+        total = 0.0
+        for item in self.basketitem_set.iterator():
+            total += item.price
+        return total
+
+    def summary(self):
+        summ = self.customer.shop.title + '-'
+        for item in self.basketitem_set.iterator():
+            summ += item.product.title
+            summ += ' '
+        return summ[0:128]
 
     class Meta:
         verbose_name = _("订单")
@@ -88,6 +104,8 @@ class ShopInfo(EstoreModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     title = models.CharField(_('店铺名称'), max_length=32)
+
+    merchant = models.ForeignKey('AppMerchant', on_delete=models.CASCADE, verbose_name=_('所属商户'))
 
     app_id = models.CharField(_('小程序id'), max_length=128, blank=True, null=True)
 
@@ -121,7 +139,7 @@ class ShopInfo(EstoreModel):
 
 
 class Notice(EstoreModel):
-    belong = models.ForeignKey('ShopInfo', related_name='notices', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
+    shop = models.ForeignKey('ShopInfo', related_name='notices', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
     content = models.TextField(_('内容'), max_length=512, help_text=_('最多500个字符，250个汉字'))
 
     class Meta:
@@ -133,8 +151,8 @@ class Notice(EstoreModel):
 
 
 class Product(EstoreModel):
-    belong = models.ForeignKey('ShopInfo', related_name='products', on_delete=models.CASCADE, blank=True, null=True,
-                               verbose_name=_('所属商铺'))
+    shop = models.ForeignKey('ShopInfo', related_name='products', on_delete=models.CASCADE, blank=True, null=True,
+                             verbose_name=_('所属商铺'))
 
     title = models.CharField(_('名称'), max_length=32)
 

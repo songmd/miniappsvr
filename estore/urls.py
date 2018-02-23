@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     url(r'^login/$', views.customer_login, name='customer_login'),
     url(r'^askforpay/$', views.ask_for_pay, name='ask_for_pay'),
+    url(r'^wxpaynotify/$', views.wxpay_notify, name='wxpay_notify'),
 ]
 urlpatterns2 = [
     url(r'^shops/(?P<pk>[\w]+)/$', views.ShopInfoDetail.as_view()),
