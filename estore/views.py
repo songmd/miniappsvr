@@ -111,12 +111,13 @@ def ask_for_pay(request):
                                         total_fee=int(order.amount() * 100),
                                         spbill_create_ip=get_client_ip(request),
                                         limit_pay='no_credit',
-                                        openid=order.customer.openid),
+                                        openid=order.customer.openid)
     if wx_data is None:
         resp['retcode'] = RetCode.WXSRV_ERROR
     else:
         resp['retcode'] = RetCode.SUCCESS
-        resp['prepay'] = wx_data
+        resp.update(wx_data)
+        # resp['prepay'] = wx_data
         print(wx_data)
 
     # comment = wxapi.pull_comment('20180201000000', '20180211000000')
@@ -130,6 +131,17 @@ class ShopInfoDetail(generics.RetrieveAPIView):
 
 
 class ProductList(generics.ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        shop_id = self.request.query_params.get('shop_id', None)
+        if shop_id is None:
+            return Product.objects.all().none()
+        queryset = Product.objects.filter(shop=shop_id)
+        return queryset
+
+
+class ProductDetail(generics.RetrieveAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
@@ -166,37 +178,49 @@ class OrderList(generics.ListCreateAPIView):
             resp['retcode'] = RetCode.INVALID_PARA
             return HttpResponse(json.dumps(resp), content_type="application/json")
         customer = AppCustomer.objects.get(pk=kwargs['user_token'])
-        if 'product' in request.data:
-            if 'quantity' not in request.data or 'price' not in request.data:
-                resp['retcode'] = RetCode.INVALID_PARA
-                return HttpResponse(json.dumps(resp), content_type="application/json")
-            item = BasketItem(product_id=request.data['product'],
-                              quantity=request.data['quantity'],
-                              price=request.data['price'])
-            order = Order(customer=customer)
-            item.belong_order = order
-            with transaction.atomic():
-                order.save()
-                item.save()
-            resp['retcode'] = RetCode.SUCCESS
-            resp['order_no'] = order.id.hex
-        elif 'item' in request.data:
-            if len(request.data['item']) <= 0:
-                resp['retcode'] = RetCode.INVALID_PARA
-                return HttpResponse(json.dumps(resp), content_type="application/json")
-            with transaction.atomic():
-                order = Order(customer=customer)
-                order.save()
-                for iid in request.data['item']:
-                    item = BasketItem.objects.get(pk=iid)
-                    if item.belong_order is not None or item.belong_customer is None:
-                        raise ()
-                    item.belong_customer = None
-                    item.belong_order = order
-                    item.save()
-            resp['retcode'] = RetCode.SUCCESS
-            resp['order_no'] = order.id.hex
+        order = Order(customer=customer)
+        with transaction.atomic():
+            order.save()
+            for item in request.data:
+                basket_item = BasketItem(product_id=item['product'],
+                                         quantity=item['quantity'],
+                                         price=item['price'],
+                                         belong_order=order)
+                basket_item.save()
+        resp['retcode'] = RetCode.SUCCESS
+        resp['order_no'] = order.id.hex
         return HttpResponse(json.dumps(resp), content_type="application/json")
+        # if 'product' in request.data:
+        #     if 'quantity' not in request.data or 'price' not in request.data:
+        #         resp['retcode'] = RetCode.INVALID_PARA
+        #         return HttpResponse(json.dumps(resp), content_type="application/json")
+        #     item = BasketItem(product_id=request.data['product'],
+        #                       quantity=request.data['quantity'],
+        #                       price=request.data['price'])
+        #     order = Order(customer=customer)
+        #     item.belong_order = order
+        #     with transaction.atomic():
+        #         order.save()
+        #         item.save()
+        #     resp['retcode'] = RetCode.SUCCESS
+        #     resp['order_no'] = order.id.hex
+        # elif 'item' in request.data:
+        #     if len(request.data['item']) <= 0:
+        #         resp['retcode'] = RetCode.INVALID_PARA
+        #         return HttpResponse(json.dumps(resp), content_type="application/json")
+        #     with transaction.atomic():
+        #         order = Order(customer=customer)
+        #         order.save()
+        #         for iid in request.data['item']:
+        #             item = BasketItem.objects.get(pk=iid)
+        #             if item.belong_order is not None or item.belong_customer is None:
+        #                 raise ()
+        #             item.belong_customer = None
+        #             item.belong_order = order
+        #             item.save()
+        #     resp['retcode'] = RetCode.SUCCESS
+        #     resp['order_no'] = order.id.hex
+        # return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 class OrderDetail(generics.RetrieveAPIView):

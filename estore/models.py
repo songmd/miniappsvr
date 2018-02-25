@@ -1,8 +1,8 @@
 import uuid
-from django.db import models
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
+from .fields import *
 
 
 class AppMerchant(models.Model):
@@ -149,23 +149,29 @@ class Notice(EstoreModel):
     def __str__(self):
         return self.content
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.creator_id is None and self.shop is not None:
+            self.creator_id = self.shop.creator_id
+        return super(Notice, self).save(force_insert=force_insert, force_update=force_update, using=using,
+                                        update_fields=update_fields)
+
 
 class Product(EstoreModel):
-    shop = models.ForeignKey('ShopInfo', related_name='products', on_delete=models.CASCADE, blank=True, null=True,
-                             verbose_name=_('所属商铺'))
+    shop = models.ForeignKey('ShopInfo', related_name='products', on_delete=models.CASCADE, verbose_name=_('所属商铺'))
 
     title = models.CharField(_('名称'), max_length=32)
 
-    categories = models.ManyToManyField('ProductCategory', blank=True, verbose_name=_('所属分类'))
+    categories = ManyToManyFieldWithDDW('ProductCategory', blank=True, verbose_name=_('所属分类'))
 
-    primary_pic = models.OneToOneField('Picture', blank=True, null=True, verbose_name=_('首要图片'),
+    primary_pic = models.ForeignKey('Picture', blank=True, null=True, verbose_name=_('主图'),
                                        on_delete=models.SET_NULL)
 
     price = models.FloatField(_('价格'))
 
     off_price = models.FloatField(_('折扣价格'), blank=True, null=True)
 
-    pics = models.ManyToManyField('Picture', blank=True, related_name='pics', verbose_name=_('图片'))
+    pics = models.ManyToManyField('Picture', blank=True, related_name='pics', verbose_name=_('细节图片集'))
 
     class Meta:
         verbose_name = _('商品')
@@ -206,12 +212,13 @@ class ProductCategory(MPTTModel, EstoreModel):
                             verbose_name=_('上级分类'))
 
     def __str__(self):
-        display = self.name
-        pp = self.parent
-        while pp is not None:
-            display = '%s->%s' % (pp.name, display)
-            pp = pp.parent
-        return display
+        return self.name
+        # display = self.name
+        # pp = self.parent
+        # while pp is not None:
+        #     display = '%s->%s' % (pp.name, display)
+        #     pp = pp.parent
+        # return display
 
     class Meta:
         verbose_name = _('商品分类')

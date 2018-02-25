@@ -10,6 +10,7 @@ urlpatterns = [
 urlpatterns2 = [
     url(r'^shops/(?P<pk>[\w]+)/$', views.ShopInfoDetail.as_view()),
     url(r'^products/$', views.ProductList.as_view()),
+    url(r'^products/(?P<pk>[\w]+)/$', views.ProductDetail.as_view()),
     url(r'^basketitem/(?P<user_token>[\w]+)/$', views.BasketItemList.as_view()),
     url(r'^basketitem/(?P<user_token>[\w]+)/(?P<pk>[\w]+)/$', views.BasketItemDelete.as_view()),
     url(r'^order/(?P<user_token>[\w]+)/$', views.OrderList.as_view()),

@@ -1,14 +1,16 @@
 from django.contrib import admin
-
-from django.db.models import Q
+from django.forms import ModelForm
 
 from mptt.admin import MPTTModelAdmin
 
 from .models import *
 
+from .widgets import *
+
 admin.AdminSite.site_header = '三语信息技术有限公司'
 # admin.AdminSite.site_url = None
 admin.AdminSite.index_title = '首页'
+
 
 class EstoreModelAdminMixin(object):
 
@@ -49,7 +51,7 @@ class EstoreModelAdminMixin(object):
 
 
 @admin.register(Picture)
-class PictureAdmin(EstoreModelAdminMixin,admin.ModelAdmin):
+class PictureAdmin(EstoreModelAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'display_picture', 'display_path',)
     list_display_links = ('title', 'display_picture', 'display_path',)
 
@@ -58,8 +60,18 @@ class NoticeInline(EstoreModelAdminMixin, admin.TabularInline):
     model = Notice
 
 
+class ShopInfoForm(ModelForm):
+    class Meta:
+        model = ShopInfo
+        widgets = {
+            'banners': DropdownSelectMultiple(attrs={'class': 'dropdown-ms'}),
+        }
+        exclude = []
+
+
 @admin.register(ShopInfo)
 class ShopInfoAdmin(admin.ModelAdmin):
+    form = ShopInfoForm
 
     def save_model(self, request, obj, form, change):
 
@@ -102,7 +114,6 @@ class AppCustomerAdmin(admin.ModelAdmin):
     pass
 
 
-
 @admin.register(Product)
 class ProductAdmin(EstoreModelAdminMixin, admin.ModelAdmin):
     pass
@@ -114,8 +125,6 @@ class ProductCategoryAdmin(EstoreModelAdminMixin, MPTTModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "parent":
-            kwargs["queryset"] = ProductCategory.objects.filter(owner=request.user)
+            kwargs["queryset"] = ProductCategory.objects.filter(creator=request.user)
 
         return super(ProductCategoryAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
-
