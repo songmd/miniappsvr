@@ -1,3 +1,4 @@
+import json
 from django.contrib import admin
 from django.forms import ModelForm
 
@@ -55,6 +56,14 @@ class PictureAdmin(EstoreModelAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'display_picture', 'display_path',)
     list_display_links = ('title', 'display_picture', 'display_path',)
 
+    def response_add(self, request, obj, post_url_continue=None):
+        ts = super(PictureAdmin, self).response_add(request, obj, post_url_continue)
+        IS_POPUP_VAR = '_popup'
+        if IS_POPUP_VAR in request.POST:
+            objdict = dict(value=obj.id, obj='##@@%s##@@%s' % (str(obj), obj.pic.url))
+            ts.context_data['popup_response_data'] = json.dumps(objdict)
+        return ts
+
 
 class NoticeInline(EstoreModelAdminMixin, admin.TabularInline):
     template = 'tabular.html'
@@ -84,11 +93,13 @@ class ShopInfoAdmin(admin.ModelAdmin):
             return True
         return request.user.is_superuser or request.user.is_staff
 
+
     def get_queryset(self, request):
         qs = super(ShopInfoAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(creator=request.user)
+
 
     def has_change_permission(self, request, obj=None):
         has_perm = super(ShopInfoAdmin, self).has_change_permission(request, obj)

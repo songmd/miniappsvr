@@ -7,16 +7,23 @@
 
 <script type="text/javascript">
     $(function () {
-        $('select[name="{{ widget.name }}"]').data('cur_select',-1).parent().append(
+        $('select[name="{{ widget.name }}"]').data('cur_select', -1).parent().append(
             '<img class="foreign-img" height="180px" style="padding-top:10px;display: block;clear:both;"></img>'
         )
         setInterval(function () {
             $('select.foreign-img-field').each(function () {
                     var curselect = $(this).val()
-                    if(curselect != $(this).data('cur_select')){
-                        $(this).data('cur_select',curselect)
+                    if (curselect != $(this).data('cur_select')) {
+                        $(this).data('cur_select', curselect)
                         var url = $(this).children('option:selected').data('url')
-                        $(this).siblings('img.foreign-img').attr('src',url)
+                        if (typeof(url) == "undefined") {
+                            var picInfo = $(this).children('option:selected').text().split('##@@')
+                            if (picInfo.length == 3) {
+                                $(this).children('option:selected').text(picInfo[1]).data('url', picInfo[2])
+                                url = picInfo[2]
+                            }
+                        }
+                        $(this).siblings('img.foreign-img').attr('src', url)
                     }
                 }
             )

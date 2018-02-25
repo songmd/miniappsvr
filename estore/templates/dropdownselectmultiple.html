@@ -8,7 +8,6 @@
 <script type="text/javascript">
     $(function () {
         $('select.dropdown-ms').change(function () {
-            console.log($(this).val());
         }).multipleSelect({});
         $('select.dropdown-ms').parents().css({'overflow': 'visible', 'min-height': '36px'})
         $('select.dropdown-ms').data('option_num',$('select.dropdown-ms').children('option').length)
