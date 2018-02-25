@@ -1,0 +1,12 @@
+<input type="{{ widget.type }}" class="dropify" data-max-file-size="1M" data-show-remove="false"
+       data-allowed-file-extensions="png jpeg jpg gif bmp"
+       {% if widget.is_initial %}data-default-file="{{ widget.value.url }}" {% endif %}
+       name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %} />
+
+<script type="text/javascript">
+    $(function () {
+        $('.dropify').dropify({}).on('dropify.afterClear', function (/*event, element*/) {
+        }).on('dropify.fileReady', function (/*event, element*/) {
+        });
+    });
+</script>

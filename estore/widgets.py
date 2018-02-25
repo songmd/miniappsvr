@@ -22,3 +22,13 @@ class DropdownSelectMultiple(forms.Select):
         css = {
             'all': ('css/multiple-select.css',)
         }
+
+
+class ImgWidget(forms.ClearableFileInput):
+    template_name = 'imgwidget.html'
+
+    class Media:
+        css = {
+            'all': ('css/dropify.css',)
+        }
+        js = ('js/jquery.min.js', 'js/dropify.js', )

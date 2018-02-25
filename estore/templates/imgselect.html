@@ -1,0 +1,32 @@
+<select style="width:180px;" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+    {% for group_name, group_choices, group_index in widget.optgroups %}{% if group_name %}
+        <optgroup label="{{ group_name }}">{% endif %}{% for option in group_choices %}
+        {% include option.template_name with widget=option %}{% endfor %}{% if group_name %}
+        </optgroup>{% endif %}{% endfor %}
+</select>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $select = $('select[name="{{ widget.name }}"]')
+        $select.parent().append('<img id="for_img_select" src="/estorepics/img_not_select.png" height="180px" style="padding-top:10px;display: block;clear:both;"></img>')
+        urlmap = {}
+
+        setInterval(function () {
+            $select.find('option').each(function () {
+                url = $(this).text().split('||||')
+                if (url.length != 2) {
+                    if (!($(this).val() in urlmap))
+                        urlmap[$(this).val()] = '/estorepics/img_not_select.png'
+                }
+                else {
+                    urlmap[$(this).val()] = url[1]
+                    $(this).text(url[0])
+                }
+            })
+            $('#for_img_select').attr('src', urlmap[$select.val()])
+        }, 100)
+
+    });
+</script>
+
+

@@ -59,19 +59,8 @@ class PictureAdmin(EstoreModelAdminMixin, admin.ModelAdmin):
 class NoticeInline(EstoreModelAdminMixin, admin.TabularInline):
     model = Notice
 
-
-class ShopInfoForm(ModelForm):
-    class Meta:
-        model = ShopInfo
-        widgets = {
-            'banners': DropdownSelectMultiple(attrs={'class': 'dropdown-ms'}),
-        }
-        exclude = []
-
-
 @admin.register(ShopInfo)
 class ShopInfoAdmin(admin.ModelAdmin):
-    form = ShopInfoForm
 
     def save_model(self, request, obj, form, change):
 

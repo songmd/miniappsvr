@@ -165,7 +165,7 @@ class Product(EstoreModel):
     categories = ManyToManyFieldWithDDW('ProductCategory', blank=True, verbose_name=_('所属分类'))
 
     primary_pic = models.ForeignKey('Picture', blank=True, null=True, verbose_name=_('主图'),
-                                       on_delete=models.SET_NULL)
+                                    on_delete=models.SET_NULL)
 
     price = models.FloatField(_('价格'))
 
@@ -183,7 +183,7 @@ class Product(EstoreModel):
 
 class Picture(EstoreModel):
     title = models.CharField(_('标题'), max_length=32)
-    pic = models.ImageField(_('图片'), upload_to='estorepics')
+    pic = ImageFieldEx(_('图片'), upload_to='estorepics')
 
     def display_picture(self):
         return format_html('<image src="{}" height="80px"></image>',
