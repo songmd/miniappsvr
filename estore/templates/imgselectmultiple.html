@@ -1,0 +1,49 @@
+<select style="width:180px;" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+    {% for group_name, group_choices, group_index in widget.optgroups %}{% if group_name %}
+        <optgroup label="{{ group_name }}">{% endif %}{% for option in group_choices %}
+        {% include option.template_name with widget=option %}{% endfor %}{% if group_name %}
+        </optgroup>{% endif %}{% endfor %}
+</select>
+
+<script type="text/javascript">
+    $(function () {
+        $('select[name="{{ widget.name }}"]').data('cur_select', -1).parent().parent().parent().append(
+            '<div id="{{ widget.name }}" class="many-to-many-img-field" style="padding-top:15px;display:block"></div>'
+        )
+        setInterval(function () {
+            $('select.many-to-many-img-field').each(function () {
+                    var curselect = $(this).val()
+                    console.log(curselect)
+                    if (curselect != $(this).data('cur_select')) {
+                        $(this).data('cur_select', curselect)
+                        $imgcontainer = $('#{{ widget.name }}').filter('div.many-to-many-img-field')
+                        $imgcontainer.find('img').remove()
+                        $(this).find('option:selected').each(function () {
+                            $imgcontainer.append($('<img height="180px" style="padding-right:5px"></img>').attr('src', $(this).data('url')))
+                        })
+                        if ($imgcontainer.children().length == 0) {
+                            $imgcontainer.append($('<img height="180px" style="padding-right:5px"></img>').attr('src', "/estorepics/img_not_select.png"))
+                        }
+                    }
+                }
+            )
+        }, 200)
+    });
+    $(function () {
+        $('select.dropdown-ms').change(function () {
+            console.log($(this).val());
+        }).multipleSelect({});
+        $('select.dropdown-ms').parents().css({'overflow': 'visible', 'min-height': '36px'})
+        $('select.dropdown-ms').data('option_num', $('select.dropdown-ms').children('option').length)
+        setInterval(function () {
+            var count = $('select.dropdown-ms').children('option').length
+            if (count != $('select.dropdown-ms').data('option_num')) {
+                $('select.dropdown-ms').data('multipleSelect').refresh()
+                $('select.dropdown-ms').data('option_num', count)
+            }
+        }, 200)
+    });
+
+</script>
+
+

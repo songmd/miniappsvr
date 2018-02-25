@@ -127,7 +127,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/'
+
+
 
 ADMIN_REORDER = (
     ("网上商城", ("商户", "店铺", "商品", "商品分类", "图片", "客户",)),

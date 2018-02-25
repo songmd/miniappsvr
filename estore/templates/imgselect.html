@@ -6,26 +6,21 @@
 </select>
 
 <script type="text/javascript">
-    $(document).ready(function () {
-        $select = $('select[name="{{ widget.name }}"]')
-        $select.parent().append('<img id="for_img_select" src="/estorepics/img_not_select.png" height="180px" style="padding-top:10px;display: block;clear:both;"></img>')
-        urlmap = {}
-
+    $(function () {
+        $('select[name="{{ widget.name }}"]').data('cur_select',-1).parent().append(
+            '<img class="foreign-img" height="180px" style="padding-top:10px;display: block;clear:both;"></img>'
+        )
         setInterval(function () {
-            $select.find('option').each(function () {
-                url = $(this).text().split('||||')
-                if (url.length != 2) {
-                    if (!($(this).val() in urlmap))
-                        urlmap[$(this).val()] = '/estorepics/img_not_select.png'
+            $('select.foreign-img-field').each(function () {
+                    var curselect = $(this).val()
+                    if(curselect != $(this).data('cur_select')){
+                        $(this).data('cur_select',curselect)
+                        var url = $(this).children('option:selected').data('url')
+                        $(this).siblings('img.foreign-img').attr('src',url)
+                    }
                 }
-                else {
-                    urlmap[$(this).val()] = url[1]
-                    $(this).text(url[0])
-                }
-            })
-            $('#for_img_select').attr('src', urlmap[$select.val()])
-        }, 100)
-
+            )
+        }, 200)
     });
 </script>
 

@@ -121,9 +121,11 @@ class ShopInfo(EstoreModel):
 
     description = models.TextField(_('店铺描述'), max_length=512, blank=True, null=True, help_text=_('最多500个字符，250个汉字'))
 
-    icon = models.ForeignKey('Picture', blank=True, null=True, verbose_name=_('店铺图标'), on_delete=models.SET_NULL)
+    icon = ForeignImgField('Picture', blank=True, null=True, verbose_name=_('店铺图标'), on_delete=models.SET_NULL)
 
-    banners = models.ManyToManyField('Picture', blank=True, related_name='banners', verbose_name=_('广告图片'))
+    icon2 = ForeignImgField('Picture', blank=True, null=True, related_name='dds',verbose_name=_('店铺图标2'), on_delete=models.SET_NULL)
+
+    banners = ManyToManyImgField('Picture', blank=True, related_name='banners', verbose_name=_('广告图片'))
 
     def display_id(self):
         return self.id.hex
@@ -164,7 +166,7 @@ class Product(EstoreModel):
 
     categories = ManyToManyFieldWithDDW('ProductCategory', blank=True, verbose_name=_('所属分类'))
 
-    primary_pic = models.ForeignKey('Picture', blank=True, null=True, verbose_name=_('主图'),
+    primary_pic = ForeignImgField('Picture', blank=True, null=True, verbose_name=_('主图'),
                                     on_delete=models.SET_NULL)
 
     price = models.FloatField(_('价格'))
