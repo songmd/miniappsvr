@@ -101,15 +101,15 @@ class EstoreModel(models.Model):
 
 
 class ShopInfo(EstoreModel):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     title = models.CharField(_('店铺名称'), max_length=32)
 
     merchant = models.ForeignKey('AppMerchant', on_delete=models.CASCADE, verbose_name=_('所属商户'))
 
-    app_id = models.CharField(_('小程序id'), max_length=128, blank=True, null=True)
+    app_id = models.CharField(_('小程序id'), max_length=64, blank=True, null=True)
 
-    app_secret = models.CharField(_('小程序密钥'), max_length=128, blank=True, null=True)
+    app_secret = models.CharField(_('小程序密钥'), max_length=64, blank=True, null=True)
 
     address = models.CharField(_('地址'), max_length=128, blank=True, null=True)
 
@@ -119,11 +119,9 @@ class ShopInfo(EstoreModel):
 
     latitude = models.FloatField(_('纬度'), blank=True, null=True)
 
-    description = models.TextField(_('店铺描述'), max_length=512, blank=True, null=True, help_text=_('最多500个字符，250个汉字'))
+    description = models.CharField(_('店铺描述'), max_length=128, blank=True, null=True)
 
     icon = ForeignImgField('Picture', blank=True, null=True, verbose_name=_('店铺图标'), on_delete=models.SET_NULL)
-
-    icon2 = ForeignImgField('Picture', blank=True, null=True, related_name='dds',verbose_name=_('店铺图标2'), on_delete=models.SET_NULL)
 
     banners = ManyToManyImgField('Picture', blank=True, related_name='banners', verbose_name=_('广告图片'))
 
@@ -142,7 +140,7 @@ class ShopInfo(EstoreModel):
 
 class Notice(EstoreModel):
     shop = models.ForeignKey('ShopInfo', related_name='notices', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
-    content = models.TextField(_('内容'), max_length=512, help_text=_('最多500个字符，250个汉字'))
+    content = models.CharField(_('内容'), max_length=256, )
 
     class Meta:
         verbose_name = _('公告')
@@ -167,13 +165,13 @@ class Product(EstoreModel):
     categories = ManyToManyFieldWithDDW('ProductCategory', blank=True, verbose_name=_('所属分类'))
 
     primary_pic = ForeignImgField('Picture', blank=True, null=True, verbose_name=_('主图'),
-                                    on_delete=models.SET_NULL)
+                                  on_delete=models.SET_NULL)
 
     price = models.FloatField(_('价格'))
 
     off_price = models.FloatField(_('折扣价格'), blank=True, null=True)
 
-    pics = models.ManyToManyField('Picture', blank=True, related_name='pics', verbose_name=_('细节图片集'))
+    pics = ManyToManyImgField('Picture', blank=True, related_name='pics', verbose_name=_('细节图片集'))
 
     class Meta:
         verbose_name = _('商品')

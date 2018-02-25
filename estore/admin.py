@@ -57,7 +57,13 @@ class PictureAdmin(EstoreModelAdminMixin, admin.ModelAdmin):
 
 
 class NoticeInline(EstoreModelAdminMixin, admin.TabularInline):
+    template = 'tabular.html'
     model = Notice
+
+    @property
+    def media(self):
+        return super(NoticeInline, self).media + forms.Media(css={'all': ('css/estore.css',)})
+
 
 @admin.register(ShopInfo)
 class ShopInfoAdmin(admin.ModelAdmin):
@@ -91,6 +97,10 @@ class ShopInfoAdmin(admin.ModelAdmin):
         return has_perm or for_staff_show or is_creator_obj
 
     inlines = [NoticeInline]
+    readonly_fields = ('display_id',)
+    fields = (('display_id',), ('title', 'merchant'),
+              ('app_id', 'app_secret'), ('address', 'phone_num'),
+              ('longitude', 'latitude'), 'description', 'icon', 'banners')
 
 
 @admin.register(AppMerchant)
