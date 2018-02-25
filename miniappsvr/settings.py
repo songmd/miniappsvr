@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'mptt',
     'estore.apps.EstoreConfig',
 
-
 ]
 
 # REST_FRAMEWORK = {
@@ -129,3 +128,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
+
+ADMIN_REORDER = (
+    ("网上商城", ("商户", "店铺", "商品", "商品分类", "图片", "客户",)),
+    ("认证和授权", ("用户", "组")),
+)
