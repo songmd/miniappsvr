@@ -266,7 +266,7 @@ class ProductCategoryAdmin(MPTTModelAdmin):
 
 @admin.register(AppCustomer)
 class AppCustomerAdmin(admin.ModelAdmin):
-    change_form_template = 'change_form.html'
+    change_form_template = 'readonly_change_form.html'
     list_display = ('id', 'shop', 'openid')
     readonly_fields = ('display_id', 'shop', 'openid', 'session_key', 'unionid', 'user_info')
     exclude = ['id']
