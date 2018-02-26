@@ -114,6 +114,13 @@ class ShopInfoAdmin(admin.ModelAdmin):
             is_owner = True
         return has_perm or for_staff_show or is_owner
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
     inlines = [NoticeInline]
     readonly_fields = ('display_id',)
     fields = (('display_id',), ('title', 'merchant'),
@@ -151,6 +158,13 @@ class AppMerchantAdmin(admin.ModelAdmin):
         for_staff_show = request.user.is_staff and obj is None
         is_owner_obj = getattr(obj, 'user', None) == request.user
         return has_perm or for_staff_show or is_owner_obj
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
 
 
 @admin.register(Product)
@@ -271,6 +285,13 @@ class AppCustomerAdmin(admin.ModelAdmin):
             is_owner = True
         return has_perm or for_staff_show or is_owner
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -295,6 +316,13 @@ class OrderAdmin(admin.ModelAdmin):
             is_owner = True
         return has_perm or for_staff_show or is_owner
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
 
 @admin.register(BasketItem)
 class BasketItemAdmin(admin.ModelAdmin):
@@ -318,3 +346,10 @@ class BasketItemAdmin(admin.ModelAdmin):
         if obj is not None and obj.product.shop.merchant == getattr(request.user, 'merchant', None):
             is_owner = True
         return has_perm or for_staff_show or is_owner
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions

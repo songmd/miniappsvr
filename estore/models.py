@@ -80,8 +80,8 @@ class Order(models.Model):
         ('unpay', _("未支付")),
         ('payed', _("已支付")),
         ('undeliver', _("等待发货")),
-        ('deliving', _("正在运送")),
-        ('delived', _("已送达")),
+        ('delivering', _("正在运送")),
+        ('delivered', _("已送达")),
         ('confirm', _("已确认")),
     )
 
