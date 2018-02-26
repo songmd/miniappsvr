@@ -93,13 +93,11 @@ class ShopInfoAdmin(admin.ModelAdmin):
             return True
         return request.user.is_superuser or request.user.is_staff
 
-
     def get_queryset(self, request):
         qs = super(ShopInfoAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(creator=request.user)
-
 
     def has_change_permission(self, request, obj=None):
         has_perm = super(ShopInfoAdmin, self).has_change_permission(request, obj)

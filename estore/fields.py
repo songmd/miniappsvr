@@ -29,6 +29,6 @@ class ForeignImgField(models.ForeignKey):
 
 class ManyToManyImgField(models.ManyToManyField):
     def formfield(self, **kwargs):
-        kwargs['widget'] = ImgSelectMultipleWidget(attrs={'class': 'dropdown-ms many-to-many-img-field'})
+        kwargs['widget'] = ImgSelectMultipleWidget(attrs={'class': 'img-dropdown-ms many-to-many-img-field'})
         # kwargs['to_field_name'] = 'pic'
         return super(ManyToManyImgField, self).formfield(**kwargs)

@@ -10,15 +10,16 @@
         $('select.dropdown-ms').change(function () {
         }).multipleSelect({});
         $('select.dropdown-ms').parents().css({'overflow': 'visible', 'min-height': '36px'})
-        $('select.dropdown-ms').data('option_num',$('select.dropdown-ms').children('option').length)
+        $('select.dropdown-ms').each(function () {
+            $(this).data('option_num', $(this).children('option').length)
+        })
         setInterval(function () {
-            var count =  $('select.dropdown-ms').children('option').length
-            if(count != $('select.dropdown-ms').data('option_num')){
-                $('select.dropdown-ms').data('multipleSelect').refresh()
-                $('select.dropdown-ms').data('option_num',count)
-            }
-        },200)
+            $('select.dropdown-ms').each(function () {
+                if ($(this).children('option').length != $(this).data('option_num')) {
+                    $(this).data('multipleSelect').refresh()
+                    $(this).data('option_num', $(this).children('option').length)
+                }
+            })
+        }, 200)
     });
 </script>
-
-
