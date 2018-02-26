@@ -1,5 +1,6 @@
 import uuid
 from django.utils.html import format_html
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 from .fields import *
@@ -46,18 +47,31 @@ class AppCustomer(models.Model):
 # 购物蓝中或者订单中的某一项
 class BasketItem(models.Model):
     # 要么属于订单，要么属于购物篮
-    belong_customer = models.ForeignKey('AppCustomer', on_delete=models.CASCADE, null=True, verbose_name=_("所属客户"))
-    belong_order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, verbose_name=_("所属订单"))
+    belong_customer = models.ForeignKey('AppCustomer', on_delete=models.CASCADE, null=True, verbose_name=_("所属客户"),
+                                        editable=False)
+    belong_order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, verbose_name=_("所属订单"),
+                                     editable=False)
 
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, verbose_name=_("商品"))
-    quantity = models.PositiveIntegerField(_('数量'), default=1)
-    price = models.FloatField(_('成交价格'))
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, verbose_name=_("商品"), editable=False)
+    quantity = models.PositiveIntegerField(_('数量'), default=1, editable=False)
+    price = models.FloatField(_('成交价格'), editable=False)
     date_created = models.DateTimeField(_("生成时间"), auto_now_add=True)
 
     def display_product(self):
-        return self.product.title
+        change_url = reverse('admin:estore_product_change', args=(self.product_id,))
+        return format_html('<a href="{}">{}</a>', change_url,
+                           self.product.title)
 
+    display_product.allow_tags = True
     display_product.short_description = _('商品')
+
+    def display_order(self):
+        change_url = reverse('admin:estore_order_change', args=(self.belong_order_id,))
+        return format_html('<a href="{}">{}</a>', change_url,
+                           self.belong_order.id.hex)
+
+    display_order.allow_tags = True
+    display_order.short_description = _('所属订单')
 
     def __str__(self):
         return '%s:%s:%s' % (self.product.title, self.price, self.quantity)
@@ -86,6 +100,14 @@ class Order(models.Model):
     )
 
     status = models.CharField(_("订单状态"), max_length=32, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+
+    def display_customer(self):
+        change_url = reverse('admin:estore_appcustomer_change', args=(self.customer_id,))
+        return format_html('<a href="{}">{}</a>', change_url,
+                           self.customer.id.hex)
+
+    display_customer.allow_tags = True
+    display_customer.short_description = _('所属客户')
 
     def __str__(self):
         return self.id.hex

@@ -295,7 +295,8 @@ class AppCustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'status', 'customer')
+    list_display = ('id', 'status', 'display_customer')
+    list_editable = ('status',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -326,7 +327,8 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(BasketItem)
 class BasketItemAdmin(admin.ModelAdmin):
-    list_display = ('display_product', 'price', 'quantity', 'date_created', 'belong_order')
+    list_display = ('display_product', 'price', 'quantity', 'date_created', 'display_order')
+    list_display_links = None
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
