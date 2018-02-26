@@ -1,6 +1,8 @@
 import json
 from django.contrib import admin
 
+from django.utils.translation import gettext_lazy as _
+
 from django.contrib.auth.models import User
 
 from mptt.admin import MPTTModelAdmin
@@ -264,7 +266,19 @@ class ProductCategoryAdmin(MPTTModelAdmin):
 
 @admin.register(AppCustomer)
 class AppCustomerAdmin(admin.ModelAdmin):
+    change_form_template = 'change_form.html'
     list_display = ('id', 'shop', 'openid')
+    readonly_fields = ('display_id', 'shop', 'openid', 'session_key', 'unionid', 'user_info')
+    exclude = ['id']
+
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context['title'] = _('客户信息')
+        return super().render_change_form(request, context, add=add, change=change, form_url=form_url, obj=obj)
+
+    def get_changelist_instance(self, request):
+        cl = super().get_changelist_instance(request)
+        cl.title = _('客户列表')
+        return cl
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -293,10 +307,28 @@ class AppCustomerAdmin(admin.ModelAdmin):
         return actions
 
 
+class BasketItemInline(admin.TabularInline):
+    template = 'tabular.html'
+    can_delete = False
+    model = BasketItem
+
+    readonly_fields = ('display_product', 'quantity', 'price')
+    fields = ('display_product', 'quantity', 'price')
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_module_permission(self, request):
+        return True
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'status', 'display_customer')
+    readonly_fields = ('id', 'out_trade_no', 'display_customer', 'date_created')
+    fields = ('id', 'out_trade_no', 'display_customer', 'date_created', 'status')
+    list_display = ('id', 'status', 'date_created', 'display_customer')
     list_editable = ('status',)
+    inlines = [BasketItemInline]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -327,8 +359,13 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(BasketItem)
 class BasketItemAdmin(admin.ModelAdmin):
-    list_display = ('display_product', 'price', 'quantity', 'date_created', 'display_order')
+    list_display = ('display_product', 'price', 'quantity', 'display_order')
     list_display_links = None
+
+    def get_changelist_instance(self, request):
+        cl = super().get_changelist_instance(request)
+        cl.title = _('购买单项列表')
+        return cl
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

@@ -22,7 +22,7 @@ class AppMerchant(models.Model):
 
 
 class AppCustomer(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name=_('客户标示'))
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name=_('客户标识'))
     shop = models.ForeignKey('ShopInfo', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
     openid = models.CharField(_('微信OpenId'), max_length=128)
     session_key = models.CharField(_('会话密钥'), max_length=128)
@@ -47,15 +47,12 @@ class AppCustomer(models.Model):
 # 购物蓝中或者订单中的某一项
 class BasketItem(models.Model):
     # 要么属于订单，要么属于购物篮
-    belong_customer = models.ForeignKey('AppCustomer', on_delete=models.CASCADE, null=True, verbose_name=_("所属客户"),
-                                        editable=False)
-    belong_order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, verbose_name=_("所属订单"),
-                                     editable=False)
+    belong_customer = models.ForeignKey('AppCustomer', on_delete=models.CASCADE, null=True, verbose_name=_("所属客户"))
+    belong_order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, verbose_name=_("所属订单"))
 
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, verbose_name=_("商品"), editable=False)
-    quantity = models.PositiveIntegerField(_('数量'), default=1, editable=False)
-    price = models.FloatField(_('成交价格'), editable=False)
-    date_created = models.DateTimeField(_("生成时间"), auto_now_add=True)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, verbose_name=_("商品"))
+    quantity = models.PositiveIntegerField(_('数量'), default=1)
+    price = models.FloatField(_('成交价格'))
 
     def display_product(self):
         change_url = reverse('admin:estore_product_change', args=(self.product_id,))
@@ -100,6 +97,8 @@ class Order(models.Model):
     )
 
     status = models.CharField(_("订单状态"), max_length=32, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+
+    date_created = models.DateTimeField(_("生成时间"), auto_now_add=True)
 
     def display_customer(self):
         change_url = reverse('admin:estore_appcustomer_change', args=(self.customer_id,))
