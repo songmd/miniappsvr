@@ -21,7 +21,7 @@ class AppMerchant(models.Model):
 
 
 class AppCustomer(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name=_('客户标示'))
     shop = models.ForeignKey('ShopInfo', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
     openid = models.CharField(_('微信OpenId'), max_length=128)
     session_key = models.CharField(_('会话密钥'), max_length=128)
@@ -54,6 +54,18 @@ class BasketItem(models.Model):
     price = models.FloatField(_('成交价格'))
     date_created = models.DateTimeField(_("生成时间"), auto_now_add=True)
 
+    def display_product(self):
+        return self.product.title
+
+    display_product.short_description = _('商品')
+
+    def __str__(self):
+        return '%s:%s:%s' % (self.product.title, self.price, self.quantity)
+
+    class Meta:
+        verbose_name = _('购买单项')
+        verbose_name_plural = _('购买单项')
+
 
 class Order(models.Model):
     id = models.UUIDField(_('ID'), primary_key=True, default=uuid.uuid4)
@@ -74,6 +86,9 @@ class Order(models.Model):
     )
 
     status = models.CharField(_("订单状态"), max_length=32, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+
+    def __str__(self):
+        return self.id.hex
 
     def amount(self):
         total = 0.0
@@ -100,7 +115,7 @@ class EstoreModel(models.Model):
         abstract = True
 
 
-class ShopInfo(EstoreModel):
+class ShopInfo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     title = models.CharField(_('店铺名称'), max_length=32)
@@ -138,7 +153,7 @@ class ShopInfo(EstoreModel):
         return self.title
 
 
-class Notice(EstoreModel):
+class Notice(models.Model):
     shop = models.ForeignKey('ShopInfo', related_name='notices', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
     content = models.CharField(_('内容'), max_length=256, )
 
@@ -149,15 +164,8 @@ class Notice(EstoreModel):
     def __str__(self):
         return self.content
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        if self.creator_id is None and self.shop is not None:
-            self.creator_id = self.shop.creator_id
-        return super(Notice, self).save(force_insert=force_insert, force_update=force_update, using=using,
-                                        update_fields=update_fields)
 
-
-class Product(EstoreModel):
+class Product(models.Model):
     shop = models.ForeignKey('ShopInfo', related_name='products', on_delete=models.CASCADE, verbose_name=_('所属商铺'))
 
     title = models.CharField(_('名称'), max_length=32)

@@ -11,7 +11,7 @@ class PictureSerializer(serializers.ModelSerializer):
 class NoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notice
-        exclude = ['creator']
+        exclude = []
 
 
 class ShopInfoSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class ShopInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShopInfo
-        exclude = ['app_id', 'app_secret', 'creator']
+        exclude = ['app_id', 'app_secret']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        exclude = ['creator']
+        exclude = []
 
 
 class BasketItemSerializer(serializers.ModelSerializer):
