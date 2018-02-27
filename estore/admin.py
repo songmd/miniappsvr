@@ -14,6 +14,7 @@ from .widgets import *
 admin.AdminSite.site_header = '三语信息技术有限公司'
 # admin.AdminSite.site_url = None
 admin.AdminSite.index_title = '首页'
+admin.AdminSite.site_title = '三语小程序商城管理'
 
 
 @admin.register(Picture)
