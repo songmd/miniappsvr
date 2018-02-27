@@ -114,7 +114,7 @@ class Order(models.Model):
     def amount(self):
         total = 0.0
         for item in self.basketitem_set.iterator():
-            total += item.price
+            total += item.price*item.quantity
         return total
 
     def summary(self):
