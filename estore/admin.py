@@ -291,6 +291,9 @@ class AppCustomerAdmin(admin.ModelAdmin):
             return True
         return request.user.is_superuser or request.user.is_staff
 
+    def has_add_permission(self, request):
+        return False
+
     def has_change_permission(self, request, obj=None):
         has_perm = super().has_change_permission(request, obj)
         for_staff_show = request.user.is_staff and obj is None
@@ -321,6 +324,9 @@ class BasketItemInline(admin.TabularInline):
     def has_module_permission(self, request):
         return True
 
+    def has_add_permission(self, request):
+        return False
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -340,6 +346,9 @@ class OrderAdmin(admin.ModelAdmin):
         if super().has_module_permission(request):
             return True
         return request.user.is_superuser or request.user.is_staff
+
+    def has_add_permission(self, request):
+        return False
 
     def has_change_permission(self, request, obj=None):
         has_perm = super().has_change_permission(request, obj)
@@ -377,6 +386,9 @@ class BasketItemAdmin(admin.ModelAdmin):
         if super().has_module_permission(request):
             return True
         return request.user.is_superuser or request.user.is_staff
+
+    def has_add_permission(self, request):
+        return False
 
     def has_change_permission(self, request, obj=None):
         has_perm = super().has_change_permission(request, obj)
