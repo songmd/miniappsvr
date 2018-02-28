@@ -152,25 +152,25 @@ class ProductDetail(generics.RetrieveAPIView):
         return queryset
 
 
-class BasketItemList(generics.ListCreateAPIView):
-    serializer_class = BasketItemSerializer
-
-    def get_queryset(self):
-        return BasketItem.objects.all().filter(belong_customer=self.kwargs['user_token'])
-
-
-class BasketItemDelete(generics.DestroyAPIView):
-    serializer_class = BasketItemSerializer
-
-    def get_queryset(self):
-        return BasketItem.objects.all().filter(belong_customer=self.kwargs['user_token'])
+# class BasketItemList(generics.ListCreateAPIView):
+#     serializer_class = BasketItemSerializer
+#
+#     def get_queryset(self):
+#         return BasketItem.objects.all().filter(belong_customer=self.kwargs['user_token'])
+#
+#
+# class BasketItemDelete(generics.DestroyAPIView):
+#     serializer_class = BasketItemSerializer
+#
+#     def get_queryset(self):
+#         return BasketItem.objects.all().filter(belong_customer=self.kwargs['user_token'])
 
 
 class OrderList(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
 
     def get_queryset(self):
-        return Order.objects.all().filter(customer=self.kwargs['user_token'])
+        return Order.objects.all().filter(customer=self.kwargs['user_token'], status__gte=0)
 
     def create(self, request, *args, **kwargs):
         resp = {}
@@ -223,8 +223,22 @@ class OrderList(generics.ListCreateAPIView):
         # return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
-class OrderDetail(generics.RetrieveAPIView):
+class OrderDetail(generics.UpdateAPIView):
     serializer_class = OrderSerializer
 
     def get_queryset(self):
         return Order.objects.all().filter(customer=self.kwargs['user_token'])
+
+
+class CustomerAddressList(generics.ListCreateAPIView):
+    serializer_class = CustomerAddressSerializer
+
+    def get_queryset(self):
+        return CustomerAddress.objects.all().filter(customer=self.kwargs['user_token'])
+
+
+class CustomerAddressDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CustomerAddressSerializer
+
+    def get_queryset(self):
+        return CustomerAddress.objects.all().filter(customer=self.kwargs['user_token'])

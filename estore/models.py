@@ -44,11 +44,28 @@ class AppCustomer(models.Model):
         return self.id.hex
 
 
+class CustomerAddress(models.Model):
+    customer = models.ForeignKey('AppCustomer', related_name='addresses', on_delete=models.CASCADE,
+                                 verbose_name=_('所属客户'))
+    name = models.CharField(_('联系人'), max_length=32, null=True, blank=True)
+    mobile = models.CharField(_('手机号'), max_length=32, null=True, blank=True)
+    province = models.CharField(_('省'), max_length=32, null=True, blank=True)
+    city = models.CharField(_('市'), max_length=32, null=True, blank=True)
+    district = models.CharField(_('区县'), max_length=32, null=True, blank=True)
+    detail_addr = models.CharField(_('详细地址'), max_length=128, null=True, blank=True)
+    zip_code = models.CharField(_('邮编'), max_length=32, null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('客户地址')
+        verbose_name_plural = _('客户地址')
+
+
 # 购物蓝中或者订单中的某一项
 class BasketItem(models.Model):
     # 要么属于订单，要么属于购物篮
     belong_customer = models.ForeignKey('AppCustomer', on_delete=models.CASCADE, null=True, verbose_name=_("所属客户"))
-    belong_order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, verbose_name=_("所属订单"))
+    belong_order = models.ForeignKey('Order', related_name='items', on_delete=models.CASCADE, null=True,
+                                     verbose_name=_("所属订单"))
 
     product = models.ForeignKey('Product', on_delete=models.CASCADE, verbose_name=_("商品"))
     quantity = models.PositiveIntegerField(_('数量'), default=1)
@@ -88,15 +105,16 @@ class Order(models.Model):
                                  verbose_name=_('所属客户'))
 
     STATUS_CHOICES = (
-        ('unpay', _("未支付")),
-        ('payed', _("已支付")),
-        ('undeliver', _("等待发货")),
-        ('delivering', _("正在运送")),
-        ('delivered', _("已送达")),
-        ('confirm', _("已确认")),
+        (0, _("待付款")),
+        (1, _("待发货")),
+        (2, _("待收货")),
+        (3, _("待评价")),
+        (4, _("已完成")),
+        (-1, _("已取消")),
+        (-2, _('付款待确认'))
     )
 
-    status = models.CharField(_("订单状态"), max_length=32, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+    status = models.IntegerField(_("订单状态"), choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
 
     date_created = models.DateTimeField(_("生成时间"), auto_now_add=True)
 
@@ -113,13 +131,13 @@ class Order(models.Model):
 
     def amount(self):
         total = 0.0
-        for item in self.basketitem_set.iterator():
-            total += item.price*item.quantity
-        return total
+        for item in self.items.iterator():
+            total += item.price * item.quantity
+        return round(total, 2)
 
     def summary(self):
         summ = self.customer.shop.title + '-'
-        for item in self.basketitem_set.iterator():
+        for item in self.items.iterator():
             summ += item.product.title
             summ += ' '
         return summ[0:128]
@@ -157,7 +175,11 @@ class ShopInfo(models.Model):
 
     description = models.CharField(_('店铺描述'), max_length=128, blank=True, null=True)
 
+    open_time = models.CharField(_('营业时间'), max_length=32, blank=True, null=True)
+
     icon = ForeignImgField('Picture', blank=True, null=True, verbose_name=_('店铺图标'), on_delete=models.SET_NULL)
+
+    detail_pics = ManyToManyImgField('Picture', blank=True, related_name='detail_pics', verbose_name=_('店铺图片集'))
 
     banners = ManyToManyImgField('Picture', blank=True, related_name='banners', verbose_name=_('广告图片'))
 

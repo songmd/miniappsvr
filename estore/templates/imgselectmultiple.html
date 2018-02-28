@@ -8,14 +8,13 @@
 <script type="text/javascript">
     $(function () {
         $('select[name="{{ widget.name }}"]').data('cur_select', -1).parent().parent().parent().append(
-            '<div id="{{ widget.name }}" class="many-to-many-img-field" style="padding-top:15px;display:block"></div>'
+            '<div id="img_container_{{ widget.name }}" class="many-to-many-img-field" style="padding-top:15px;display:block"></div>'
         )
         setInterval(function () {
-            $('select.many-to-many-img-field').each(function () {
-                    var curselect = $(this).val()
-                    if (curselect != $(this).data('cur_select')) {
-                        $(this).data('cur_select', curselect)
-                        $imgcontainer = $('#{{ widget.name }}').filter('div.many-to-many-img-field')
+            $('select[name="{{ widget.name }}').each(function () {
+                    if ($(this).val() != $(this).data('cur_select')) {
+                        $(this).data('cur_select', $(this).val())
+                        $imgcontainer = $('#img_container_{{ widget.name }}')
                         $imgcontainer.find('img').remove()
                         $(this).find('option:selected').each(function () {
                             var url = $(this).data('url')
@@ -37,14 +36,14 @@
         }, 200)
     });
     $(function () {
-        $('select.img-dropdown-ms').change(function () {
+        $('select[name="{{ widget.name }}').change(function () {
         }).multipleSelect({});
-        $('select.img-dropdown-ms').parents().css({'overflow': 'visible', 'min-height': '36px'})
-        $('select.img-dropdown-ms').each(function () {
+        $('select[name="{{ widget.name }}').parents().css({'overflow': 'visible', 'min-height': '36px'})
+        $('select[name="{{ widget.name }}').each(function () {
             $(this).data('option_num', $(this).children('option').length)
         })
         setInterval(function () {
-            $('select.img-dropdown-ms').each(function () {
+            $('select[name="{{ widget.name }}').each(function () {
                 if ($(this).children('option').length != $(this).data('option_num')){
                     $(this).data('multipleSelect').refresh()
                     $(this).data('option_num',$(this).children('option').length)

@@ -6,3 +6,26 @@ table {
 td.field-content input{
     width: 640px
 }
+
+
+td.field-name input{
+    width: 90px
+}
+td.field-mobile input{
+    width: 120px
+}
+td.field-province input{
+    width: 60px
+}
+td.field-city input{
+    width: 60px
+}
+td.field-district input{
+    width: 60px
+}
+td.field-detail_addr input{
+    width: 300px
+}
+td.field-zip_code input{
+    width: 60px
+}

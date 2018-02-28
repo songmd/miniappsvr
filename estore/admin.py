@@ -94,7 +94,7 @@ class ShopInfoAdmin(admin.ModelAdmin):
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if not request.user.is_superuser:
-            if db_field.name == "banners":
+            if db_field.name == "banners" or db_field.name == "detail_pics":
                 kwargs["queryset"] = Picture.objects.filter(creator=request.user)
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
@@ -128,7 +128,7 @@ class ShopInfoAdmin(admin.ModelAdmin):
     readonly_fields = ('display_id',)
     fields = (('display_id',), ('title', 'merchant'),
               ('app_id', 'app_secret'), ('address', 'phone_num'),
-              ('longitude', 'latitude'), 'description', 'icon', 'banners')
+              ('longitude', 'latitude'), 'description', 'open_time', 'icon', 'detail_pics', 'banners')
 
 
 @admin.register(AppMerchant)
@@ -173,6 +173,8 @@ class AppMerchantAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'shop', 'price', 'off_price')
+
+    fields = (('shop', 'categories'), 'title', 'price', 'off_price', 'primary_pic', 'pics')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -265,12 +267,29 @@ class ProductCategoryAdmin(MPTTModelAdmin):
         return for_staff_show or creator == request.user
 
 
+class CustomerAddressInline(admin.TabularInline):
+    template = 'tabular.html'
+    model = CustomerAddress
+
+    can_delete = False
+
+    readonly_fields = ('name', 'mobile', 'province', 'city', 'district', 'detail_addr', 'zip_code')
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    @property
+    def media(self):
+        return super().media + forms.Media(css={'all': ('css/estore.css',)})
+
+
 @admin.register(AppCustomer)
 class AppCustomerAdmin(admin.ModelAdmin):
     change_form_template = 'readonly_change_form.html'
     list_display = ('id', 'shop', 'openid')
     readonly_fields = ('display_id', 'shop', 'openid', 'session_key', 'unionid', 'user_info')
     exclude = ['id']
+    inlines = [CustomerAddressInline]
 
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         context['title'] = _('客户信息')
