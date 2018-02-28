@@ -181,7 +181,7 @@ class OrderList(generics.ListCreateAPIView):
         order = Order(customer=customer)
         with transaction.atomic():
             order.save()
-            for item in request.data:
+            for item in request.data['items']:
                 basket_item = BasketItem(product_id=item['product'],
                                          quantity=item['quantity'],
                                          price=item['price'],

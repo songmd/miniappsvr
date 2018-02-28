@@ -15,6 +15,7 @@ class NoticeSerializer(serializers.ModelSerializer):
 
 
 class ShopInfoSerializer(serializers.ModelSerializer):
+    detail_pics = PictureSerializer(many=True)
     banners = PictureSerializer(many=True)
     icon = PictureSerializer()
     notices = NoticeSerializer(many=True)
