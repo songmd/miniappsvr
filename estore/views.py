@@ -178,7 +178,17 @@ class OrderList(generics.ListCreateAPIView):
             resp['retcode'] = RetCode.INVALID_PARA
             return HttpResponse(json.dumps(resp), content_type="application/json")
         customer = AppCustomer.objects.get(pk=kwargs['user_token'])
-        order = Order(customer=customer)
+        address = request.data['address']
+        order = Order(customer=customer,
+                      name=address['name'],
+                      mobile=address['mobile'],
+                      province=address['province'],
+                      city=address['city'],
+                      district=address['district'],
+                      detail_addr=address['detail_addr'],
+                      zip_code=address['zip_code'])
+        if 'remark' in request.data:
+            order.remark = request.data['remark']
         with transaction.atomic():
             order.save()
             for item in request.data['items']:

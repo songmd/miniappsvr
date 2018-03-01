@@ -60,7 +60,8 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         exclude = []
-        fields = ['order_no', 'status', 'date_created', 'amount', 'items']
+        fields = ['order_no', 'status', 'date_created', 'amount', 'items', 'remark',
+                  'name', 'mobile', 'province', 'city', 'district', 'detail_addr', 'zip_code']
 
     def get_order_no(self, obj):
         v1 = None

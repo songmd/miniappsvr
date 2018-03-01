@@ -54,7 +54,7 @@ class CustomerAddress(models.Model):
     district = models.CharField(_('区县'), max_length=32, null=True, blank=True)
     detail_addr = models.CharField(_('详细地址'), max_length=128, null=True, blank=True)
     zip_code = models.CharField(_('邮编'), max_length=32, null=True, blank=True)
-    priority = models.IntegerField(_('优先级'),default=0)
+    priority = models.IntegerField(_('优先级'), default=0)
 
     class Meta:
         verbose_name = _('客户地址')
@@ -119,6 +119,8 @@ class Order(models.Model):
 
     date_created = models.DateTimeField(_("生成时间"), auto_now_add=True)
 
+    remark = models.CharField(_('备注'), max_length=128, null=True, blank=True)
+
     name = models.CharField(_('联系人'), max_length=32, null=True, blank=True)
     mobile = models.CharField(_('手机号'), max_length=32, null=True, blank=True)
     province = models.CharField(_('省'), max_length=32, null=True, blank=True)
@@ -126,7 +128,6 @@ class Order(models.Model):
     district = models.CharField(_('区县'), max_length=32, null=True, blank=True)
     detail_addr = models.CharField(_('详细地址'), max_length=128, null=True, blank=True)
     zip_code = models.CharField(_('邮编'), max_length=32, null=True, blank=True)
-
 
     def display_customer(self):
         change_url = reverse('admin:estore_appcustomer_change', args=(self.customer_id,))

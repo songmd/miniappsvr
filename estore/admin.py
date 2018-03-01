@@ -350,10 +350,11 @@ class BasketItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    readonly_fields = ('id', 'out_trade_no', 'display_customer', 'date_created',
-                       'name', 'mobile', 'province', 'city', 'district', 'zip_code', 'detail_addr')
-    fields = ('status', ('id', 'out_trade_no'), ('display_customer', 'date_created'),
-              ('name', 'mobile'), ('province', 'city'), ('district', 'zip_code'), 'detail_addr')
+    readonly_fields = ('id', 'out_trade_no', 'display_customer', 'date_created', 'remark',
+                       'name', 'mobile', 'province', 'city',
+                       'district', 'zip_code', 'detail_addr')
+    fields = ('status', ('id', 'out_trade_no'), ('display_customer', 'date_created'), 'remark',
+              ('name', 'mobile'), ('province', 'city', 'district', 'zip_code'), 'detail_addr')
     list_display = ('id', 'status', 'name', 'mobile', 'detail_addr', 'date_created', 'display_customer')
     list_editable = ('status',)
     inlines = [BasketItemInline]
