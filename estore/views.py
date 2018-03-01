@@ -252,3 +252,25 @@ class CustomerAddressDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return CustomerAddress.objects.all().filter(customer=self.kwargs['user_token'])
+
+
+class CustomerCommentCreate(generics.CreateAPIView):
+    def create(self, request, *args, **kwargs):
+        resp = {}
+        if ('order' not in request.data) or ('items' not in request.data):
+            resp['retcode'] = RetCode.INVALID_PARA
+            return HttpResponse(json.dumps(resp), content_type="application/json")
+        order = Order.objects.get(pk=request.data['order'])
+        order.status = 4
+        with transaction.atomic():
+            for item in request.data['items']:
+                customer_comment = CustomerComment(product_id=item['product'],
+                                                   order=order,
+                                                   score=item['score'],
+                                                   comment=item['comment'])
+                customer_comment.save()
+            order.save()
+
+        resp['retcode'] = RetCode.SUCCESS
+
+        return HttpResponse(json.dumps(resp), content_type="application/json")

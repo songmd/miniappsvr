@@ -40,7 +40,7 @@ class BasketItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BasketItem
-        fields = ['product', 'quantity']
+        fields = ['product', 'price', 'quantity']
 
 
 class DateTimeTzAwareField(serializers.DateTimeField):
@@ -64,11 +64,16 @@ class OrderSerializer(serializers.ModelSerializer):
                   'name', 'mobile', 'province', 'city', 'district', 'detail_addr', 'zip_code']
 
     def get_order_no(self, obj):
-        v1 = None
         return obj.id.hex
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerAddress
+        exclude = []
+
+
+class CustomerCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerComment
         exclude = []

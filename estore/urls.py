@@ -19,5 +19,8 @@ urlpatterns2 = [
 
     url(r'^address/(?P<user_token>[\w]+)/$', views.CustomerAddressList.as_view()),
     url(r'^address/(?P<user_token>[\w]+)/(?P<pk>[\w]+)/$', views.CustomerAddressDetail.as_view()),
+
+    url(r'^comment/$', views.CustomerCommentCreate.as_view()),
+
 ]
 urlpatterns += format_suffix_patterns(urlpatterns2)

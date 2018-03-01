@@ -158,6 +158,34 @@ class Order(models.Model):
         verbose_name_plural = _("订单")
 
 
+class CustomerComment(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, verbose_name=_('商品'))
+    order = models.ForeignKey('Order', on_delete=models.SET_NULL, null=True, verbose_name=_('所属订单'))
+    score = models.FloatField(_('评分'))
+    comment = models.TextField(_('评语'), max_length=512, null=True)
+
+    class Meta:
+        verbose_name = _("客户评价")
+        verbose_name_plural = _("客户评价")
+
+    def __str__(self):
+        return self.product.title
+
+    def display_product(self):
+        change_url = reverse('admin:estore_product_change', args=(self.product_id,))
+        return format_html('<a href="{}">{}</a>', change_url,
+                           self.product.title)
+    display_product.allow_tags = True
+    display_product.short_description = _('商品')
+
+    def display_order(self):
+        change_url = reverse('admin:estore_order_change', args=(self.order_id,))
+        return format_html('<a href="{}">{}</a>', change_url,
+                           self.order_id.hex)
+
+    display_order.allow_tags = True
+    display_order.short_description = _('所属订单')
+
 class EstoreModel(models.Model):
     creator = models.ForeignKey('auth.User', on_delete=models.CASCADE, editable=False, verbose_name=_('创建者'))
 

@@ -427,3 +427,49 @@ class BasketItemAdmin(admin.ModelAdmin):
             if 'delete_selected' in actions:
                 del actions['delete_selected']
         return actions
+
+
+@admin.register(CustomerComment)
+class CustomerCommentAdmin(admin.ModelAdmin):
+    change_form_template = 'readonly_change_form.html'
+    readonly_fields = ('product', 'order', 'score', 'comment')
+    fields = ('product', 'order', 'score', 'comment')
+    list_display = ('display_product', 'display_order', 'score', 'comment')
+
+    def get_changelist_instance(self, request):
+        cl = super().get_changelist_instance(request)
+        cl.title = _('客户评价列表')
+        return cl
+
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context['title'] = _('客户评价信息')
+        return super().render_change_form(request, context, add=add, change=change, form_url=form_url, obj=obj)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(product__shop__merchant=getattr(request.user, 'merchant', None))
+
+    def has_module_permission(self, request):
+        if super().has_module_permission(request):
+            return True
+        return request.user.is_superuser or request.user.is_staff
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        has_perm = super().has_change_permission(request, obj)
+        for_staff_show = request.user.is_staff and obj is None
+        is_owner = False
+        if obj is not None and obj.product.shop.merchant == getattr(request.user, 'merchant', None):
+            is_owner = True
+        return has_perm or for_staff_show or is_owner
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
