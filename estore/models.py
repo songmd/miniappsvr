@@ -175,16 +175,18 @@ class CustomerComment(models.Model):
         change_url = reverse('admin:estore_product_change', args=(self.product_id,))
         return format_html('<a href="{}">{}</a>', change_url,
                            self.product.title)
+
     display_product.allow_tags = True
     display_product.short_description = _('商品')
 
     def display_order(self):
         change_url = reverse('admin:estore_order_change', args=(self.order_id,))
         return format_html('<a href="{}">{}</a>', change_url,
-                           self.order_id.hex)
+                           self.order.id.hex)
 
     display_order.allow_tags = True
     display_order.short_description = _('所属订单')
+
 
 class EstoreModel(models.Model):
     creator = models.ForeignKey('auth.User', on_delete=models.CASCADE, editable=False, verbose_name=_('创建者'))

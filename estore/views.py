@@ -170,7 +170,8 @@ class OrderList(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
 
     def get_queryset(self):
-        return Order.objects.all().filter(customer=self.kwargs['user_token'], status__gte=0)
+        return Order.objects.all().filter(customer=self.kwargs['user_token'], status__gte=0).order_by(
+            '-date_created')
 
     def create(self, request, *args, **kwargs):
         resp = {}
