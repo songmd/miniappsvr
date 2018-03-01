@@ -126,10 +126,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-
-MEDIA_URL = '/'
+MEDIA_URL = '/medias/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'medias')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 ADMIN_REORDER = (
     ("网上商城", ("商户", "店铺", "商品", "商品分类", "图片", "客户", '订单', '购买单项', '客户评价')),
     ("认证和授权", ("用户", "组")),
 )
+
+ALLOWED_HOSTS = ['47.94.240.132', 'www.tingjieshaoer.cn','tingjieshaoer.cn','localhost', '127.0.0.1']

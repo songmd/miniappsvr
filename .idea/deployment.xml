@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="aliyun">
+    <serverData>
+      <paths name="aliyun">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/etc/apache2/sites-available" local="$PROJECT_DIR$/apache-conf" web="/" />
+            <mapping deploy="/var/www/miniappsvr" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/venv" />
+            <excludedPath path="/var/www/miniappsvr/venv" />
+            <excludedPath local="true" path="$PROJECT_DIR$/estorepics" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cert" />
+            <excludedPath local="true" path="$PROJECT_DIR$/db.sqlite3" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>

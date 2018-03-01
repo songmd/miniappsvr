@@ -43,7 +43,7 @@ class ImgSelectWidget(forms.Select):
         from .models import Picture
         qs = Picture.objects.all()
 
-        context['widget']['optgroups'][0][1][0]['attrs']['url'] = '/estorepics/img_not_select.png'
+        context['widget']['optgroups'][0][1][0]['attrs']['url'] = '/medias/img_not_select.png'
 
         for opt in context['widget']['optgroups'][1::]:
             opt[1][0]['attrs']['url'] = qs.get(pk=opt[1][0]['value']).pic.url
@@ -75,8 +75,6 @@ class ImgSelectMultipleWidget(forms.Select):
         context = super().get_context(name, value, attrs)
         from .models import Picture
         qs = Picture.objects.all()
-
-        # context['widget']['optgroups'][0][1][0]['attrs']['url'] = '/estorepics/img_not_select.png'
 
         for opt in context['widget']['optgroups']:
             opt[1][0]['attrs']['url'] = qs.get(pk=opt[1][0]['value']).pic.url
