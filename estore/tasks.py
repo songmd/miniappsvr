@@ -28,12 +28,11 @@ def get_token(appid, secret):
     expires_in = 7200
     if 'expires_in' in result:
         expires_in = result['expires_in']
-    expires_in = 20
     token_info = dict(expires_in=expires_in, access_token=result['access_token'], start_time=datetime.now())
     return token_info
 
 
-TOKEN_EXPIRE = 18
+TOKEN_EXPIRE = 7500
 
 
 @celery_app.task
@@ -55,6 +54,6 @@ def update_token():
 celery_app.conf.beat_schedule = {
     'update-token-every-30-seconds': {
         'task': 'estore.tasks.update_token',
-        'schedule': 15.0,
+        'schedule': 45.0,
     },
 }
