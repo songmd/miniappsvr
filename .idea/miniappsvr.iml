@@ -13,7 +13,7 @@
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Remote Python 3.6.4 (ssh://root@47.94.240.132:22/var/www/miniappsvr/venv/bin/python3.6)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.6 (miniappsvr)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TemplatesService">

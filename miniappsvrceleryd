@@ -1,0 +1,2 @@
+#!/bin/sh -e
+/var/www/miniappsvr/venv/bin/python3.6 -m celery -A miniappsvr worker -l info --workdir=/var/www/miniappsvr/

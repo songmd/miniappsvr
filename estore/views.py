@@ -1,5 +1,6 @@
 import json
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from .weixin import WxApi
 from estore.serializers import *
 from rest_framework import generics
@@ -87,8 +88,48 @@ def customer_login(request):
     return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
+# b'<xml>
+# <appid><![CDATA[wx773060da4bef94cc]]></appid>\n
+# <bank_type><![CDATA[CFT]]></bank_type>\n
+# <cash_fee><![CDATA[1]]></cash_fee>\n
+# <fee_type><![CDATA[CNY]]></fee_type>\n
+# <is_subscribe><![CDATA[N]]></is_subscribe>\n
+# <mch_id><![CDATA[1498624892]]></mch_id>\n
+# <nonce_str><![CDATA[IeSv6kZG4whqw62q5bUrYAZcPlTkt06F]]></nonce_str>\n
+# <openid><![CDATA[oAu0e5V9v2dmoEKEtPXYdQQKg4kw]]></openid>\n
+# <out_trade_no><![CDATA[718f68130f0d4f6da4b717e96e7ea453]]></out_trade_no>\n
+# <result_code><![CDATA[SUCCESS]]></result_code>\n
+# <return_code><![CDATA[SUCCESS]]></return_code>\n
+# <sign><![CDATA[880A8EAC666F1C097DFB7222BF71C0BA]]></sign>\n
+# <time_end><![CDATA[20180302095348]]></time_end>\n
+# <total_fee>1</total_fee>\n
+# <trade_type><![CDATA[JSAPI]]></trade_type>\n
+# <transaction_id><![CDATA[4200000053201803021002785040]]></transaction_id>\n
+# </xml>'
+@csrf_exempt
 def wxpay_notify(request):
-    pass
+    data = WxApi.to_dict(request.body)
+    resp = {}
+    if data['return_code'] != 'SUCCESS':
+        print('pay notify failed,%s' % data['return_msg'])
+        resp['return_code'] = 'SUCCESS'
+        return HttpResponse(WxApi.to_xml(resp), content_type="application/xml")
+
+    order = Order.objects.all().get(out_trade_no=data['out_trade_no'])
+    merchant = order.customer.shop.merchant
+
+    wxapi = WxApi('', '', merchant.mch_key, '')
+    sign = data.pop('sign', None)
+    real_sign = wxapi.sign(data, 'MD5')
+    if sign != real_sign:
+        resp['return_code'] = 'FAIL'
+        resp['return_msg'] = 'wrong sign'
+        print('pay notify failed,%s' % data['return_msg'])
+        return HttpResponse(WxApi.to_xml(resp), content_type="application/xml")
+    order.status = 1
+    order.save()
+    resp['return_code'] = 'SUCCESS'
+    return HttpResponse(WxApi.to_xml(resp), content_type="application/xml")
 
 
 def ask_for_pay(request):

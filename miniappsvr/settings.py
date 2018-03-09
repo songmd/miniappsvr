@@ -65,8 +65,7 @@ ROOT_URLCONF = 'miniappsvr.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,4 +134,33 @@ ADMIN_REORDER = (
     ("认证和授权", ("用户", "组")),
 )
 
-ALLOWED_HOSTS = ['47.94.240.132', 'www.tingjieshaoer.cn','tingjieshaoer.cn','localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['47.94.240.132', 'www.tingjieshaoer.cn', 'tingjieshaoer.cn', 'localhost', '127.0.0.1']
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'miniappsvr.log'),
+        },
+    },
+    # 'loggers': {
+    #     'celery.tasks': {
+    #         'handlers': ['file'],
+    #         'level': 'DEBUG',
+    #         'propagate': True,
+    #     },
+    # },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

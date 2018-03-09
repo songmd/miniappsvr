@@ -278,6 +278,12 @@ class CustomerAddressInline(admin.TabularInline):
     def has_change_permission(self, request, obj=None):
         return True
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_module_permission(self, request):
+        return True
+
     @property
     def media(self):
         return super().media + forms.Media(css={'all': ('css/estore.css',)})

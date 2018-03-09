@@ -41,6 +41,9 @@ class WxApi(object):
         if raw['return_code'] != 'SUCCESS':
             return None
 
+        if raw['result_code'] != 'SUCCESS':
+            return None
+
         package = "prepay_id={0}".format(raw["prepay_id"])
         timestamp = str(int(time.time()))
         nonce_str = self.nonce_str()

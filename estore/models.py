@@ -259,9 +259,9 @@ class Product(models.Model):
     primary_pic = ForeignImgField('Picture', blank=True, null=True, verbose_name=_('主图'),
                                   on_delete=models.SET_NULL)
 
-    price = models.FloatField(_('价格'))
+    price = models.FloatField(_('价格'), help_text=_('单位：元'))
 
-    off_price = models.FloatField(_('折扣价格'), blank=True, null=True)
+    off_price = models.FloatField(_('折扣价格'), blank=True, null=True, help_text=_('单位：元'))
 
     pics = ManyToManyImgField('Picture', blank=True, related_name='pics', verbose_name=_('细节图片集'))
 
