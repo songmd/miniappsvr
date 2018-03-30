@@ -237,6 +237,35 @@ class ShopInfo(models.Model):
         return self.title
 
 
+class TemplateMessage(models.Model):
+    # AT0001
+    name = models.CharField(_('模版名'), max_length=32)
+    # on_pay on_order 之类的
+    fun_id = models.CharField(_('功能ID'), max_length=32)
+    shop = models.ForeignKey('ShopInfo', related_name='tpl_msgs', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
+    tpl_id = models.CharField(_('模版ID'), max_length=64)
+    title = models.CharField(_('标题'), max_length=128)
+
+    class Meta:
+        verbose_name = _('模版消息')
+        verbose_name_plural = _('模版消息')
+
+    def __str__(self):
+        return '{0}_{1}'.format(self.shop.title, self.fun_id)
+
+
+# class Coupon(models.Model):
+#     merchant = models.ForeignKey('AppMerchant', related_name='coupons',
+#                on_delete=models.CASCADE, verbose_name=_('所属商户'))
+#
+#     class Meta:
+#         verbose_name = _('卡券')
+#         verbose_name_plural = _('卡券')
+#
+#     def __str__(self):
+#         # return '{0}_{1}'.format(self.shop.title, self.fun_id)
+#         pass
+
 class Notice(models.Model):
     shop = models.ForeignKey('ShopInfo', related_name='notices', on_delete=models.CASCADE, verbose_name=_('所属店铺'))
     content = models.CharField(_('内容'), max_length=256, )

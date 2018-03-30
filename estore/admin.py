@@ -11,10 +11,11 @@ from .models import *
 
 from .widgets import *
 
-admin.AdminSite.site_header = '三语信息技术有限公司'
+admin.AdminSite.site_header = '天津三语信息技术有限公司'
 # admin.AdminSite.site_url = None
 admin.AdminSite.index_title = '首页'
-admin.AdminSite.site_title = '三语小程序商城管理'
+admin.AdminSite.site_title = '天津三语后台管理'
+admin.AdminSite.site_url = None
 
 
 @admin.register(Picture)
@@ -479,3 +480,8 @@ class CustomerCommentAdmin(admin.ModelAdmin):
             if 'delete_selected' in actions:
                 del actions['delete_selected']
         return actions
+
+
+@admin.register(TemplateMessage)
+class TemplateMessageAdin(admin.ModelAdmin):
+    pass

@@ -1,11 +1,17 @@
 import json
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .weixin import WxApi
 from estore.serializers import *
 from rest_framework import generics
 from django.db import transaction
 from django.urls import reverse
+from django.core.cache import cache
+
+import requests as reqlib
+
+from estore.tasks import *
 
 
 def get_client_ip(request):
@@ -26,6 +32,49 @@ class RetCode(object):
     SRV_EXCEPTION = '0005'
 
 
+def test(request):
+    update_token()
+    resp = {}
+    return JsonResponse(resp)
+
+
+@csrf_exempt
+def send_template_message(request):
+    resp = {}
+    user_token = request.GET.get('user_token', None)
+    func_id = request.GET.get('func_id', None)
+    form_id = request.GET.get('form_id', None)
+    tpl_data = request.GET.get('tpl_data', None)
+    tpl_data = json.loads(tpl_data)
+    if user_token is None or func_id is None or form_id is None or tpl_data is None:
+        resp['retcode'] = RetCode.INVALID_PARA
+        return JsonResponse(resp)
+    customer = AppCustomer.objects.get(pk=user_token)
+    token_info = cache.get(customer.shop.id.hex + '_token')
+    if token_info is None:
+        resp['retcode'] = RetCode.SRV_EXCEPTION
+        return JsonResponse(resp)
+    tpl = customer.shop.tpl_msgs.filter(fun_id=func_id).first()
+    if tpl is None:
+        resp['retcode'] = RetCode.INVALID_PARA
+        return JsonResponse(resp)
+    template_id = tpl.tpl_id
+
+    url = 'https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token={0}'.format(
+        token_info['access_token'])
+    para = dict(touser=customer.openid,
+                template_id=tpl.tpl_id,
+                form_id=form_id,
+                data=tpl_data,
+                page='pages/index/index',
+                emphasis_keyword='keyword1.DATA')
+    res = reqlib.session().post(url=url, json=para)
+    result = res.json()
+    print(result)
+    resp['retcode'] = RetCode.SUCCESS
+    return JsonResponse(resp)
+
+
 def customer_login(request):
     resp = {}
     js_code = request.GET.get('js_code', None)
@@ -36,7 +85,8 @@ def customer_login(request):
     try:
         if shop_id is None:
             resp['retcode'] = RetCode.INVALID_PARA
-            return HttpResponse(json.dumps(resp), content_type="application/json")
+            return JsonResponse(resp)
+            # return HttpResponse(json.dumps(resp), content_type="application/json")
 
         shop = ShopInfo.objects.get(pk=uuid.UUID(shop_id))
 
@@ -45,7 +95,8 @@ def customer_login(request):
             wx_data = WxApi.get_openid(shop.app_id, shop.app_secret, js_code)
             if 'errcode' in wx_data:
                 resp['retcode'] = RetCode.WXSRV_ERROR
-                return HttpResponse(json.dumps(resp), content_type="application/json")
+                return JsonResponse(resp)
+                # return HttpResponse(json.dumps(resp), content_type="application/json")
             try:
                 customer = AppCustomer.objects.get(openid=wx_data['openid'], shop=shop)
                 resp['user_token'] = customer.id.hex
@@ -64,28 +115,32 @@ def customer_login(request):
 
             # login(request, customer)
             resp['retcode'] = RetCode.SUCCESS
-            return HttpResponse(json.dumps(resp), content_type="application/json")
+            return JsonResponse(resp)
+            # return HttpResponse(json.dumps(resp), content_type="application/json")
 
         if user_token is not None:
             customer = AppCustomer.objects.get(pk=user_token, shop=shop)
             if customer is None:
                 resp['retcode'] = RetCode.USER_NOT_EXIST
-                return HttpResponse(json.dumps(resp), content_type="application/json")
+                return JsonResponse(resp)
+                # return HttpResponse(json.dumps(resp), content_type="application/json")
             # login(request, customer)
             resp['retcode'] = RetCode.SUCCESS
 
             if user_info != customer.user_info:
                 customer.user_info = user_info
                 customer.save()
-
-            return HttpResponse(json.dumps(resp), content_type="application/json")
+            return JsonResponse(resp)
+            # return HttpResponse(json.dumps(resp), content_type="application/json")
     except BaseException as e:
         print(e)
         resp['retcode'] = RetCode.SRV_EXCEPTION
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+        return JsonResponse(resp)
+        # return HttpResponse(json.dumps(resp), content_type="application/json")
 
     resp['retcode'] = RetCode.INVALID_PARA
-    return HttpResponse(json.dumps(resp), content_type="application/json")
+    return JsonResponse(resp)
+    # return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 # b'<xml>
@@ -113,11 +168,12 @@ def wxpay_notify(request):
     if data['return_code'] != 'SUCCESS':
         print('pay notify failed,%s' % data['return_msg'])
         resp['return_code'] = 'SUCCESS'
+        # return JsonResponse(resp)
         return HttpResponse(WxApi.to_xml(resp), content_type="application/xml")
 
     order = Order.objects.all().get(out_trade_no=data['out_trade_no'])
     merchant = order.customer.shop.merchant
-
+    print(data)
     wxapi = WxApi('', '', merchant.mch_key, '')
     sign = data.pop('sign', None)
     real_sign = wxapi.sign(data, 'MD5')
@@ -137,7 +193,8 @@ def ask_for_pay(request):
     order_no = request.GET.get('order_no', None)
     if order_no is None:
         resp['retcode'] = RetCode.INVALID_PARA
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+        return JsonResponse(resp)
+        # return HttpResponse(json.dumps(resp), content_type="application/json")
 
     order = Order.objects.get(pk=uuid.UUID(order_no))
     wxapi = WxApi(order.customer.shop.app_id,
@@ -163,7 +220,8 @@ def ask_for_pay(request):
 
     # comment = wxapi.pull_comment('20180201000000', '20180211000000')
     # print(comment)
-    return HttpResponse(json.dumps(resp), content_type="application/json")
+    return JsonResponse(resp)
+    # return HttpResponse(json.dumps(resp), content_type="application/json")
 
 
 class ShopInfoDetail(generics.RetrieveAPIView):
@@ -218,7 +276,8 @@ class OrderList(generics.ListCreateAPIView):
         resp = {}
         if 'user_token' not in kwargs:
             resp['retcode'] = RetCode.INVALID_PARA
-            return HttpResponse(json.dumps(resp), content_type="application/json")
+            return JsonResponse(resp)
+            # return HttpResponse(json.dumps(resp), content_type="application/json")
         customer = AppCustomer.objects.get(pk=kwargs['user_token'])
         address = request.data['address']
         order = Order(customer=customer,
@@ -241,7 +300,8 @@ class OrderList(generics.ListCreateAPIView):
                 basket_item.save()
         resp['retcode'] = RetCode.SUCCESS
         resp['order_no'] = order.id.hex
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+        return JsonResponse(resp)
+        # return HttpResponse(json.dumps(resp), content_type="application/json")
         # if 'product' in request.data:
         #     if 'quantity' not in request.data or 'price' not in request.data:
         #         resp['retcode'] = RetCode.INVALID_PARA
@@ -301,7 +361,8 @@ class CustomerCommentCreate(generics.CreateAPIView):
         resp = {}
         if ('order' not in request.data) or ('items' not in request.data):
             resp['retcode'] = RetCode.INVALID_PARA
-            return HttpResponse(json.dumps(resp), content_type="application/json")
+            return JsonResponse(resp)
+            # return HttpResponse(json.dumps(resp), content_type="application/json")
         order = Order.objects.get(pk=request.data['order'])
         order.status = 4
         with transaction.atomic():
@@ -314,5 +375,5 @@ class CustomerCommentCreate(generics.CreateAPIView):
             order.save()
 
         resp['retcode'] = RetCode.SUCCESS
-
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+        return JsonResponse(resp)
+        # return HttpResponse(json.dumps(resp), content_type="application/json")

@@ -3,6 +3,8 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
 urlpatterns = [
+    url(r'^test/$', views.test, name='customer_test'),
+    url(r'^sendtplmsg/$', views.send_template_message, name='send_template_message'),
     url(r'^login/$', views.customer_login, name='customer_login'),
     url(r'^askforpay/$', views.ask_for_pay, name='ask_for_pay'),
     url(r'^wxpaynotify/$', views.wxpay_notify, name='wxpay_notify'),
